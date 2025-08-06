@@ -76,7 +76,7 @@ You can run this app in a Docker container for easy deployment.
 2. **Run the Docker container**
 
    ```sh
-   docker run -p 8501:8501 anki-deck-generator
+   docker run -p 8501:8501 -v ./Decks:/code/Decks anki-deck-generator
    ```
 
 3. Open [http://localhost:8501](http://localhost:8501) in your browser to use the app.
