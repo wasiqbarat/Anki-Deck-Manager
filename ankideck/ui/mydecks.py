@@ -11,12 +11,11 @@ from ankideck import (
 
 
 def render_mydecks_tab():
-    st.markdown("### My Decks")
     st.markdown(
         """
         <style>
         :root {
-          --primary: #4F46E5;
+          --primary: #0B1220; /* match sidebar dark tone */
           --bg: #F8FAFC;
           --card: #FFFFFF;
           --text: #0F172A;
@@ -66,21 +65,23 @@ def render_mydecks_tab():
         }
         /* Delete - danger */
         .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton > button {
-          border-color: rgba(239,68,68,0.35) !important;
-          color: var(--danger) !important;
+          background: var(--danger) !important;
+          border-color: var(--danger) !important;
+          color: #ffffff !important;
         }
         .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton > button:hover {
-          background: rgba(239,68,68,0.08) !important;
+          background: #DC2626 !important; /* darker red on hover */
         }
         .fab { position: fixed; right: 24px; bottom: 24px; z-index: 1000; }
         .fab .fab-btn {
           display: inline-flex; width: 56px; height: 56px; border-radius: 50%;
           align-items: center; justify-content: center; background: var(--primary);
           color: #fff; text-decoration: none; font-size: 28px;
-          box-shadow: 0 10px 30px rgba(79,70,229,0.35);
+          border: 1px solid #111827; /* subtle border like sidebar elements */
+          box-shadow: 0 10px 30px rgba(2,6,23,0.5);
           transition: transform .15s ease, box-shadow .15s ease;
         }
-        .fab .fab-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 16px 36px rgba(79,70,229,0.45); }
+        .fab .fab-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 16px 36px rgba(2,6,23,0.6); }
         /* Compact Manage dialog spacing */
         .manage-dialog h5, .manage-dialog h6, .manage-dialog p { margin: 0.25rem 0; }
         .manage-dialog [data-testid="stVerticalBlock"] { gap: 0.35rem !important; }
@@ -112,8 +113,7 @@ def render_mydecks_tab():
 
     colL = st.container()
     with colL:
-        search = st.text_input("Search decks", value="", placeholder="Type to filter by name…")
-        decks = db_list_decks(search)
+        decks = db_list_decks("")
         if not decks:
             st.info("No decks yet. Use the + button to create one.")
         else:
@@ -130,7 +130,7 @@ def render_mydecks_tab():
                         if st.button("Manage ⚙️", key=f"manage_{d['id']}", help="Rename or append cards"):
                             st.session_state['manage_deck_id'] = d['id']
                     with b2:
-                        if st.button("Export ⬇️", key=f"export_{d['id']}", help="Export as Anki .apkg"):
+                        if st.button("Export 📤", key=f"export_{d['id']}", help="Export as Anki .apkg"):
                             path = db_export_deck_apkg(d['id'], d['name'])
                             if os.path.exists(path):
                                 with open(path, 'rb') as f:
@@ -163,6 +163,52 @@ def render_mydecks_tab():
                     if st.button("Cancel", key="confirm_delete_no"):
                         st.session_state.pop("confirm_delete_deck_id", None)
 
+    # Ensure Delete buttons are reliably styled red (using a MutationObserver and CSS class)
+    components.html(
+        """
+        <script>
+        (function() {
+          function getDoc(){
+            try { return (window.parent && window.parent.document) ? window.parent.document : document; }
+            catch(e){ return document; }
+          }
+          function ensureStyle(){
+            const doc = getDoc();
+            if (doc.getElementById('adg-danger-style')) return;
+            const style = doc.createElement('style');
+            style.id = 'adg-danger-style';
+            style.textContent = `
+              .adg-danger { background:#EF4444 !important; border-color:#EF4444 !important; color:#ffffff !important; }
+              .adg-danger:hover { background:#DC2626 !important; }
+              .adg-danger:focus { box-shadow: 0 0 0 2px rgba(239,68,68,.3) !important; }
+            `;
+            (doc.head || doc.body).appendChild(style);
+          }
+          function apply(){
+            const doc = getDoc();
+            const btns = Array.from(doc.querySelectorAll('button'));
+            for (const b of btns) {
+              const txt = (b.innerText || '').trim();
+              if (/^Delete\b/.test(txt)) {
+                b.classList.add('adg-danger');
+              }
+            }
+          }
+          function init(){
+            ensureStyle();
+            apply();
+            const doc = getDoc();
+            const mo = new MutationObserver(apply);
+            mo.observe(doc.body, { subtree: true, childList: true, characterData: true });
+            window.addEventListener('load', apply, { passive: true });
+          }
+          init();
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
     # Right column removed: content now uses full container width.
 
     # Modal dialog for managing a deck (rename and append operations)
@@ -181,7 +227,7 @@ def render_mydecks_tab():
                     # Rename section moved to bottom
                     # Append cards (collapsed to reduce space)
                     with st.expander("Append cards", expanded=True):
-                        pasted = st.text_area("Cards JSON", value="", height=100, key=f"manage_paste_append_{target['id']}")
+                        pasted = st.text_area("Cards JSON", value="", height=300, key=f"manage_paste_append_{target['id']}")
                         if st.button("Append pasted JSON", key=f"manage_append_paste_btn_{target['id']}"):
                             try:
                                 new_cards = json.loads(pasted or "[]")
@@ -191,37 +237,38 @@ def render_mydecks_tab():
                             except Exception as e:
                                 st.error(str(e))
 
-                    # Deck contents (compact, paginated)
-                    cards = db_get_deck_cards(target["id"])
-                    total = len(cards)
-                    page_size = 10
-                    max_page = max(1, (total + page_size - 1) // page_size)
-                    page = st.number_input(
-                        "Page",
-                        min_value=1,
-                        max_value=max_page,
-                        value=1,
-                        step=1,
-                        key=f"manage_cards_page_{target['id']}"
-                    )
-                    start = (page - 1) * page_size
-                    end = min(start + page_size, total)
-                    view_rows = [{"Question": c["question"], "Answer": c["answer"]} for c in cards[start:end]]
-                    st.dataframe(view_rows, use_container_width=True, hide_index=True, height=260)
+                    # Deck contents (compact, paginated) inside expander
+                    with st.expander("Deck contents", expanded=False):
+                        cards = db_get_deck_cards(target["id"])
+                        total = len(cards)
+                        page_size = 10
+                        max_page = max(1, (total + page_size - 1) // page_size)
+                        page = st.number_input(
+                            "Page",
+                            min_value=1,
+                            max_value=max_page,
+                            value=1,
+                            step=1,
+                            key=f"manage_cards_page_{target['id']}"
+                        )
+                        start = (page - 1) * page_size
+                        end = min(start + page_size, total)
+                        view_rows = [{"Question": c["question"], "Answer": c["answer"]} for c in cards[start:end]]
+                        st.dataframe(view_rows, use_container_width=True, hide_index=True, height=260)
 
-                    # Rename deck (moved to bottom)
-                    st.markdown("###### Rename deck")
-                    new_name = st.text_input("New name", value=target["name"], key=f"manage_rename_{target['id']}")
-                    if st.button("Save name", key=f"manage_rename_btn_{target['id']}"):
-                        try:
-                            db_rename_deck(target["id"], new_name)
-                            # Update selected deck name if it's the same deck
-                            if st.session_state.get("selected_deck_id") == target["id"]:
-                                st.session_state["selected_deck_name"] = new_name
-                            st.success("Deck renamed.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(str(e))
+                    # Rename deck (moved to bottom) inside expander
+                    with st.expander("Rename deck", expanded=False):
+                        new_name = st.text_input("New name", value=target["name"], key=f"manage_rename_{target['id']}")
+                        if st.button("Save name", key=f"manage_rename_btn_{target['id']}"):
+                            try:
+                                db_rename_deck(target["id"], new_name)
+                                # Update selected deck name if it's the same deck
+                                if st.session_state.get("selected_deck_id") == target["id"]:
+                                    st.session_state["selected_deck_name"] = new_name
+                                st.success("Deck renamed.")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(str(e))
                     st.markdown("</div>", unsafe_allow_html=True)
 
                 _manage_deck_dialog()

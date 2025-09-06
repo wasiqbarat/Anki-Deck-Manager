@@ -72,9 +72,10 @@ def render_editor_tab(input_mode: str, deckname: str):
                     # Add cards to the deck
                     stats = db_add_cards(deck["id"], cards)
 
-                    # Select the deck in session and switch to My Decks tab on next render
-                    st.session_state["selected_deck_id"] = deck["id"]
-                    st.session_state["selected_deck_name"] = deck["name"]
+                    # Switch to My Decks tab on next render, but do not auto-open deck contents
+                    # Clear any previously selected deck so My Decks shows only the list
+                    st.session_state.pop("selected_deck_id", None)
+                    st.session_state.pop("selected_deck_name", None)
                     st.session_state["switch_to_mydecks"] = True
 
                     # Optionally show a quick success before rerun (may not be visible due to rerun)

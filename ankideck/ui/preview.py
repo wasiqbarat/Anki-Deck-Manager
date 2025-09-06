@@ -26,12 +26,13 @@ def render_preview_tab(deckname: str):
     st.markdown("---")
     st.markdown("### Current Database Deck Snapshot")
     if deckname.strip():
-        db_cards = db_get_deck_cards_by_name(deckname)
+        safe_name = sanitize_filename(deckname)
+        db_cards = db_get_deck_cards_by_name(safe_name)
         c1, c2 = st.columns(2)
         with c1:
             st.metric("Saved cards", len(db_cards))
         with c2:
-            st.metric("Deck name", sanitize_filename(deckname))
+            st.metric("Deck name", safe_name)
         if db_cards:
             st.markdown("#### First 20 from saved deck")
             st.dataframe(db_cards[:20], height=300, width="content")

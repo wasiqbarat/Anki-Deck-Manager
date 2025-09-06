@@ -1,4 +1,4 @@
-# Anki Deck Generator — Project Documentation
+# Anki Deck Manager — Project Documentation
 
 A Streamlit-based web application to generate and manage Anki decks (.apkg) from JSON flashcard data. The app supports one-off deck generation and long-term deck maintenance backed by SQLite.
 

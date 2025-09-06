@@ -1,4 +1,5 @@
-"""Anki Deck Generator package.
+__version__ = "0.1.0"
+"""Anki Deck Manager package.
 
 Public API re-exports for convenience.
 """

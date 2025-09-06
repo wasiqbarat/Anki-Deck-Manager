@@ -123,16 +123,89 @@ def inject_base_styles():
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
 
+            /* Sidebar redesign: darker theme, improved layout, and footer */
+            [data-testid="stSidebar"] {
+                position: relative;
+                width: 280px; /* keep explicit width to avoid regressions */
+                background: linear-gradient(180deg, #0B1220 0%, #0A0F1A 100%) !important;
+                border-right: 1px solid rgba(2, 6, 23, 0.6);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+            }
+            /* Inner padding with extra bottom room for the footer */
+            [data-testid="stSidebar"] > div:first-child {
+                padding-top: 14px !important;
+                padding-bottom: 68px !important; /* reserve space for footer */
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+            }
+            /* Typography and base colors within sidebar */
+            [data-testid="stSidebar"] * { color: #E5E7EB; }
+            [data-testid="stSidebar"] h1,
+            [data-testid="stSidebar"] h2,
+            [data-testid="stSidebar"] h3,
+            [data-testid="stSidebar"] h4 { color: #F3F4F6; }
+            [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] .stMarkdown p { color: #CBD5E1; }
+            [data-testid="stSidebar"] hr, [data-testid="stSidebar"] .stDivider { border-color: rgba(148,163,184,0.18) !important; }
+            /* Tighten spacing between header and divider inside sidebar */
+            [data-testid="stSidebar"] h1,
+            [data-testid="stSidebar"] h2,
+            [data-testid="stSidebar"] h3,
+            [data-testid="stSidebar"] h4 { margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
+            [data-testid="stSidebar"] hr { margin-top: 0.25rem !important; margin-bottom: 0.5rem !important; }
+
+            /* Inputs and controls on dark sidebar */
+            [data-testid="stSidebar"] [data-testid="stTextInput"] input,
+            [data-testid="stSidebar"] [data-testid="stTextArea"] textarea,
+            [data-testid="stSidebar"] [data-testid="stSelectbox"] > div > div,
+            [data-testid="stSidebar"] [data-baseweb="input"] input {
+                background: #111827 !important;
+                border-color: #374151 !important;
+                color: #E5E7EB !important;
+            }
+            [data-testid="stSidebar"] [data-testid="stRadio"] label { color: #E5E7EB !important; }
+            [data-testid="stSidebar"] [data-testid="stRadio"] svg { filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+            [data-testid="stSidebar"] button {
+                background: #1F2937 !important;
+                color: #E5E7EB !important;
+                border: 1px solid #374151 !important;
+                border-radius: 8px !important;
+            }
+            [data-testid="stSidebar"] button:hover { background: #273447 !important; }
+
+            /* Expander styling in sidebar */
+            [data-testid="stSidebar"] .st-expander {
+                border: 1px solid rgba(148,163,184,0.25) !important;
+                background: rgba(17,24,39,0.65) !important;
+                border-radius: 10px !important;
+            }
+            [data-testid="stSidebar"] .st-expander summary { color: #E5E7EB !important; }
+            [data-testid="stSidebar"] code { background: #0F172A; color: #E2E8F0; }
+
+            /* Footer text at the bottom of the sidebar */
+            [data-testid="stSidebar"]::after {
+                content: "By Wasiq Barat";
+                position: absolute;
+                left: 16px;
+                right: 16px;
+                text-align: center;
+                bottom: 14px;
+                color: #94A3B8;
+                font-size: 0.95rem;
+                letter-spacing: 0.01em;
+                border-top: 1px solid rgba(148,163,184,0.18);
+                padding-top: 10px;
+            }
+
             /* Floating action button for My Decks */
             .fab { position: fixed; right: 24px; bottom: 24px; z-index: 1000; }
             .fab .fab-btn {
                 display: inline-flex; align-items: center; justify-content: center;
-                width: 52px; height: 52px; border-radius: 50%;
-                background: #4F46E5; color: #fff; text-decoration: none;
-                box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-                font-size: 28px; line-height: 1; border: 1px solid #4338CA;
+                width: 56px; height: 56px; border-radius: 50%;
+                background: #0B1220; color: #fff; text-decoration: none;
+                box-shadow: 0 6px 18px rgba(2,6,23,0.5);
+                font-size: 28px; line-height: 1; border: 1px solid #111827;
             }
-            .fab .fab-btn:hover { background: #4338CA; }
+            .fab .fab-btn:hover { background: #0A0F1A; }
         </style>
         """,
         unsafe_allow_html=True,

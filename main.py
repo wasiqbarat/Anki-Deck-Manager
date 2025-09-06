@@ -14,9 +14,10 @@ from ankideck.ui import (
 
 # --- Page setup ---
 st.set_page_config(
-    page_title="Anki Deck Generator",
-    page_icon="📑",
+    page_title="Anki Deck Manager",
+    page_icon="📚",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 # --- Minimal CSS for a more modern look ---
@@ -50,6 +51,8 @@ with st.container():
     # Deck name input moved into the "Create New Deck" tab
 
 # --- Sidebar ---
+# Add a little spacing between the header and the tabs bar
+st.markdown('<div style="height: 12px"></div>', unsafe_allow_html=True)
 with st.sidebar:
     input_mode = render_sidebar()
 

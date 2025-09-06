@@ -1,62 +1,72 @@
-# Anki Deck Generator
-
-A Streamlit web app to generate Anki decks (`.apkg` files) from pasted JSON flashcard data.
-You can now maintain decks over time with a built‑in SQLite database and a dedicated `My Decks` workspace.
-
----
-
-## Features
-
-- Paste your flashcards as JSON (list of objects with `question` and `answer` keys)
-- Enter a deck name and generate a fresh `.apkg` from the `Editor` tab
-- New: `My Decks` tab for persistent deck management backed by SQLite
-  - Create decks via floating “＋” button (bottom‑right)
-  - Search, select, rename, and delete decks
-  - Append new cards from the Editor JSON or paste directly in `My Decks`
-  - Edit or delete individual cards in a selected deck
-  - Export any deck to `.apkg`
-- Automatic validation and helpful errors for malformed JSON or missing fields
-  - Deduplication when appending (case-insensitive, trims spaces) so repeated cards are skipped
-  - Legacy JSON library (`DeckLibrary/`) is migrated into the database on first run
-
----
-
-## Project Structure
-
-The app is now organized as a proper Python package for better modularity and maintainability:
-
-```
-anki-deck-generator/
-├─ ankideck/                 # Application package
-│  ├─ __init__.py            # Public API re-exports
-│  ├─ config.py              # Paths and constants
-│  ├─ core.py                # Validation, sanitization, merging logic
-│  ├─ services.py            # JSON I/O and .apkg creation services
-│  └─ db.py                  # SQLite persistence layer
-├─ main.py                   # Streamlit UI (imports from ankideck)
-├─ requirements.txt
-├─ Dockerfile
-├─ data/
-├─ Decks/
-└─ DeckLibrary/
-```
-
-Import from `ankideck` instead of `utils` in new code:
-
-```python
-from ankideck import (
-  validate_cards, sanitize_filename,
-  save_validated_json, create_apkg, create_apkg_from_cards,
-  db_init, db_list_decks, db_create_deck, db_add_cards,
-  db_get_deck_cards, db_export_deck_apkg, db_rename_deck,
-)
-```
-
-The legacy `utils.py` remains for backward compatibility, but new development should use the package modules above.
-
----
-
-## Usage (Locally)
+# Anki Deck Manager
+ 
+ A Streamlit web app to generate Anki decks (`.apkg` files) from pasted JSON flashcard data.
+ You can now maintain decks over time with a built‑in SQLite database and a dedicated `My Decks` workspace.
+ 
+ [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+ [![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+ [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#license)
+ 
+ ---
+ 
+ ## Features
+ 
+  - Add more cards over time in `My Decks` (persistent, SQLite-backed)
+    - Create decks via the floating “＋” button; search, select, rename, and delete
+    - Append new cards from the current Editor JSON or paste JSON directly in `My Decks`
+    - Edit or delete individual cards inline with pagination
+    - Smart deduplication when appending (case-insensitive, trims spaces) so repeated cards are skipped
+  - Export to `.apkg` anytime
+    - One‑click export for any deck from `My Decks` (also available in `History`)
+  - Fast new deck flow
+    - Paste or upload JSON in `Editor`, enter a deck name, click **Generate Anki Deck**
+    - The app creates/updates the deck, adds cards with dedup, and auto-switches to `My Decks`
+  - Live validation, preview, and helpful error messages for malformed JSON or missing fields
+  - Offline by default: data is stored locally in SQLite (`data/decks.sqlite3`)
+  - First run migrates any legacy JSONs from `DeckLibrary/` into the database
+ 
+ ---
+ 
+ ## Quick Start
+ 
+ 1. Install dependencies
+    
+    ```bash
+    pip install -r requirements.txt
+    ```
+ 
+ 2. Run the app
+    
+    ```bash
+    streamlit run main.py
+    ```
+ 
+ 3. Create a deck and export
+    
+    - Go to `Create New Deck → Editor`, paste/upload your JSON, enter a deck name, then click **Generate Anki Deck**.
+    - Switch to `My Decks` to add more cards later and click **Export .apkg** anytime.
+ 
+ ## Export to .apkg (in 10 seconds)
+ 
+ 1. Open `My Decks` and select your deck.
+ 2. Click **Export .apkg**.
+ 3. Find the file at `Decks/<deck_name>.apkg` and import it in Anki.
+ 
+ ## Add more cards to an existing deck
+ 
+ - Flow A — From Editor JSON
+   1. Go to `Create New Deck → Editor`, paste/upload JSON and validate.
+   2. Enter the same deck name you want to grow.
+   3. Click **Generate Anki Deck** → the app deduplicates and switches to `My Decks`.
+ 
+ - Flow B — From My Decks
+   1. Open `My Decks` and select your deck.
+   2. Use “Append from current Editor JSON” or paste JSON directly in the append box.
+   3. Review inline; edit or delete cards as needed.
+ 
+ ---
+ 
+ ## Usage (Locally)
 
 1. **Install requirements**
 
@@ -122,49 +132,11 @@ Use `My Decks` when you want to keep a deck and grow it over time:
 4. Edit or delete cards inline if needed
 5. Export the deck to `.apkg` anytime
 
----
-
-## Docker Instructions
-
-You can run this app in a Docker container for easy deployment.
-
-1. **Build the Docker image**
-
-   ```sh
-   docker build -t anki-deck-generator .
-   ```
-
-2. **Run the Docker container**
-
-   ```sh
-   # persist generated decks and database locally
-   docker run -p 8501:8501 \
-     -v ./Decks:/code/Decks \
-     -v ./data:/code/data \
-     anki-deck-generator
-   ```
-
-3. Open [http://localhost:8501](http://localhost:8501) in your browser to use the app.
-
-**Note:**  
-- The provided `Dockerfile` uses Python 3.12-slim and expects a `requirements.txt` file and all source code in the build context.
-- If your main file is not `main.py`, adjust the `CMD` in the Dockerfile.
-
----
-
-## Troubleshooting
-
-- **Invalid deck name:** The app will automatically sanitize deck names to remove invalid characters
-- **Malformed JSON:** The app will show an error if your JSON is not valid or not in the correct structure
-- **Deck not created:** If the `.apkg` file is not created, an error message will be shown
-- **Where is my data?** The SQLite DB is stored at `data/decks.sqlite3`. Mount `./data` when using Docker to persist.
-
----
 
 ## License
 
 MIT License
 
 ---
-
-**Made with [Streamlit](https://streamlit.io/) and [genanki](https://github.com/kerrickstaley/genanki)**
+ 
+ **Made with [Streamlit](https://streamlit.io/) and [genanki](https://github.com/kerrickstaley/genanki)**
