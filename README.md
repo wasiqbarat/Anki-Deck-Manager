@@ -1,4 +1,4 @@
-# Anki FlashCards
+# Anki Decks Manager and Generator
  
  A Streamlit web app to generate Anki decks (`.apkg` files) from pasted JSON flashcard data.
  You can now maintain decks over time with a built‑in SQLite database and a dedicated `My Decks` workspace.
@@ -25,6 +25,14 @@
   - Offline by default: data is stored locally in SQLite (`data/decks.sqlite3`)
   - First run migrates any legacy JSONs from `DeckLibrary/` into the database
  
+ ---
+## Screeshots
+<img width="3767" height="2042" alt="image" src="https://github.com/user-attachments/assets/20cbde55-92a9-4d67-b8f6-dae2b408641c" />
+<img width="3780" height="2050" alt="image" src="https://github.com/user-attachments/assets/bc976c6a-51a4-4ece-8b8d-e0c9756ca607" />
+<img width="3772" height="2045" alt="image" src="https://github.com/user-attachments/assets/111259ec-7e13-4192-88c3-75c5bfc0d167" />
+
+
+
  ---
  
  ## Quick Start
