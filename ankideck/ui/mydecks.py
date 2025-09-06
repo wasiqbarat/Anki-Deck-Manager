@@ -1,7 +1,8 @@
 import os
 import json
 import streamlit as st
-import inspect
+import streamlit.components.v1 as components
+
 
 from ankideck import (
     db_list_decks, db_create_deck, db_export_deck_apkg, db_delete_deck,
@@ -51,33 +52,24 @@ def render_mydecks_tab():
           transform: translateY(-1px);
           box-shadow: 0 8px 20px rgba(2,6,23,0.08);
         }
-        /* Action colors by position (Open, Manage, Export, Delete) */
-        /* Open - primary */
-        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(1) .stButton > button {
-          background: var(--primary) !important;
-          color: #fff !important;
-          border-color: transparent !important;
-        }
-        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(1) .stButton > button:hover {
-          filter: brightness(0.95);
-        }
+        /* Action colors by position (Manage, Export, Delete) */
         /* Manage - neutral (already base) */
         /* Export - success outline */
-        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton > button,
+        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(2) .stButton > button,
         .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid='stDownloadButton'] > button {
           border-color: rgba(16,185,129,0.35) !important;
           color: var(--success) !important;
         }
-        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton > button:hover,
+        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(2) .stButton > button:hover,
         .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid='stDownloadButton'] > button:hover {
           background: rgba(16,185,129,0.08) !important;
         }
         /* Delete - danger */
-        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(4) .stButton > button {
+        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton > button {
           border-color: rgba(239,68,68,0.35) !important;
           color: var(--danger) !important;
         }
-        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(4) .stButton > button:hover {
+        .deck-start + div[data-testid="stHorizontalBlock"] > div:nth-child(2) [data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton > button:hover {
           background: rgba(239,68,68,0.08) !important;
         }
         .fab { position: fixed; right: 24px; bottom: 24px; z-index: 1000; }
@@ -89,6 +81,26 @@ def render_mydecks_tab():
           transition: transform .15s ease, box-shadow .15s ease;
         }
         .fab .fab-btn:hover { transform: translateY(-2px) scale(1.03); box-shadow: 0 16px 36px rgba(79,70,229,0.45); }
+        /* Compact Manage dialog spacing */
+        .manage-dialog h5, .manage-dialog h6, .manage-dialog p { margin: 0.25rem 0; }
+        .manage-dialog [data-testid="stVerticalBlock"] { gap: 0.35rem !important; }
+        .manage-dialog .stDataFrame { margin: 0.25rem 0; }
+        .manage-dialog .st-expander { margin: 0.25rem 0; }
+        .manage-dialog .stButton > button { padding: 0.35rem 0.7rem; }
+        /* Also narrow spacing when inside a Streamlit dialog */
+        div[role="dialog"] h5, div[role="dialog"] h6, div[role="dialog"] p { margin: 0.25rem 0; }
+        div[role="dialog"] [data-testid="stVerticalBlock"] { gap: 0.35rem !important; }
+        div[role="dialog"] .stDataFrame { margin: 0.25rem 0; }
+        div[role="dialog"] .st-expander { margin: 0.25rem 0; }
+        div[role="dialog"] .stButton > button { padding: 0.35rem 0.7rem; }
+        /* Make Streamlit dialog wider */
+        div[role="dialog"] {
+          width: min(1100px, 95vw) !important;
+          max-width: none !important;
+        }
+        div[role="dialog"] > div {
+          width: 100% !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -96,14 +108,7 @@ def render_mydecks_tab():
     # URL param flow for opening the create deck dialog from the floating button
     qp_obj = st.query_params
 
-    # Safe primary button helper (older Streamlit may not support `type`)
-    _btn_sig = inspect.signature(st.button)
-    _supports_type = "type" in _btn_sig.parameters
-
-    def primary_button(label: str, key: str):
-        if _supports_type:
-            return st.button(label, key=key, type="primary")
-        return st.button(label, key=key)
+    # Note: Open button removed; no primary button helper needed.
 
     colL = st.container()
     with colL:
@@ -120,16 +125,11 @@ def render_mydecks_tab():
                     st.markdown(f"<div class='deck-title'>{d['name']}</div>", unsafe_allow_html=True)
                     st.markdown(f"<div class='deck-meta'>🗂️ <span>{d['card_count']} cards</span></div>", unsafe_allow_html=True)
                 with actions_col:
-                    b1, b2, b3, b4 = st.columns([1, 1, 1, 1])
+                    b1, b2, b3 = st.columns([1, 1, 1])
                     with b1:
-                        if primary_button("Open ▶", key=f"open_{d['id']}"):
-                            st.session_state['selected_deck_id'] = d['id']
-                            st.session_state['selected_deck_name'] = d['name']
-                            st.rerun()
-                    with b2:
                         if st.button("Manage ⚙️", key=f"manage_{d['id']}", help="Rename or append cards"):
                             st.session_state['manage_deck_id'] = d['id']
-                    with b3:
+                    with b2:
                         if st.button("Export ⬇️", key=f"export_{d['id']}", help="Export as Anki .apkg"):
                             path = db_export_deck_apkg(d['id'], d['name'])
                             if os.path.exists(path):
@@ -144,7 +144,7 @@ def render_mydecks_tab():
                                     st.caption(os.path.abspath(path))
                             else:
                                 st.error("Failed to export deck.")
-                    with b4:
+                    with b3:
                         if st.button("Delete 🗑️", key=f"del_{d['id']}", help="Delete this deck"):
                             st.session_state['confirm_delete_deck_id'] = d['id']
             did = st.session_state.get("confirm_delete_deck_id")
@@ -175,43 +175,13 @@ def render_mydecks_tab():
             if _dlg_factory:
                 @_dlg_factory(f"Manage Deck: {target['name']}")
                 def _manage_deck_dialog():
-                    st.markdown("Improve and maintain your deck from here.")
-                    st.divider()
+                    st.markdown(f"##### {target['name']} — {target.get('card_count', 0)} cards")
+                    st.markdown("<div class='manage-dialog'>", unsafe_allow_html=True)
 
-                    st.markdown("#### Rename deck")
-                    new_name = st.text_input("New name", value=target["name"], key=f"manage_rename_{target['id']}")
-                    c_r1, c_r2 = st.columns([1, 1])
-                    with c_r1:
-                        if st.button("Save name", key=f"manage_rename_btn_{target['id']}"):
-                            try:
-                                db_rename_deck(target["id"], new_name)
-                                # Update selected deck name if it's the same deck
-                                if st.session_state.get("selected_deck_id") == target["id"]:
-                                    st.session_state["selected_deck_name"] = new_name
-                                st.success("Deck renamed.")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(str(e))
-                    with c_r2:
-                        pass
-
-                    st.divider()
-                    st.markdown("#### Append cards")
-                    if st.button("Append from current Editor JSON", key=f"manage_append_from_editor_{target['id']}"):
-                        src = st.session_state.get("json_text", "").strip()
-                        if not src:
-                            st.warning("Editor JSON is empty.")
-                        else:
-                            try:
-                                new_cards = json.loads(src)
-                                stats = db_add_cards(target["id"], new_cards)
-                                st.success(f"Added {stats['added']} new, {stats['duplicates']} duplicates, now {stats['after']} total.")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(str(e))
-
-                    with st.expander("Append by pasting JSON here"):
-                        pasted = st.text_area("Cards JSON", value="", height=120, key=f"manage_paste_append_{target['id']}")
+                    # Rename section moved to bottom
+                    # Append cards (collapsed to reduce space)
+                    with st.expander("Append cards", expanded=True):
+                        pasted = st.text_area("Cards JSON", value="", height=100, key=f"manage_paste_append_{target['id']}")
                         if st.button("Append pasted JSON", key=f"manage_append_paste_btn_{target['id']}"):
                             try:
                                 new_cards = json.loads(pasted or "[]")
@@ -221,14 +191,38 @@ def render_mydecks_tab():
                             except Exception as e:
                                 st.error(str(e))
 
-                    st.divider()
-                    c_close_left, c_close_right = st.columns([1, 1])
-                    with c_close_left:
-                        if st.button("Close", key=f"manage_close_{target['id']}"):
-                            st.session_state.pop("manage_deck_id", None)
+                    # Deck contents (compact, paginated)
+                    cards = db_get_deck_cards(target["id"])
+                    total = len(cards)
+                    page_size = 10
+                    max_page = max(1, (total + page_size - 1) // page_size)
+                    page = st.number_input(
+                        "Page",
+                        min_value=1,
+                        max_value=max_page,
+                        value=1,
+                        step=1,
+                        key=f"manage_cards_page_{target['id']}"
+                    )
+                    start = (page - 1) * page_size
+                    end = min(start + page_size, total)
+                    view_rows = [{"Question": c["question"], "Answer": c["answer"]} for c in cards[start:end]]
+                    st.dataframe(view_rows, use_container_width=True, hide_index=True, height=260)
+
+                    # Rename deck (moved to bottom)
+                    st.markdown("###### Rename deck")
+                    new_name = st.text_input("New name", value=target["name"], key=f"manage_rename_{target['id']}")
+                    if st.button("Save name", key=f"manage_rename_btn_{target['id']}"):
+                        try:
+                            db_rename_deck(target["id"], new_name)
+                            # Update selected deck name if it's the same deck
+                            if st.session_state.get("selected_deck_id") == target["id"]:
+                                st.session_state["selected_deck_name"] = new_name
+                            st.success("Deck renamed.")
                             st.rerun()
-                    with c_close_right:
-                        st.caption("")
+                        except Exception as e:
+                            st.error(str(e))
+                    st.markdown("</div>", unsafe_allow_html=True)
 
                 _manage_deck_dialog()
                 # Clear the flag so the dialog doesn't reopen on every rerun
@@ -236,7 +230,6 @@ def render_mydecks_tab():
             else:
                 st.warning("Your Streamlit version does not support modal dialogs. Please update Streamlit to use the Manage dialog.")
 
-    st.divider()
     sel_id = st.session_state.get("selected_deck_id")
     sel_name = st.session_state.get("selected_deck_name", "")
     if sel_id:
@@ -268,33 +261,39 @@ def render_mydecks_tab():
                         st.warning("Deleted")
                         st.rerun()
 
-    st.markdown(
+    components.html(
         """
-        <div class='fab'>
-            <a class='fab-btn' href='?create_deck=1' title='Create new deck'>＋</a>
-        </div>
+        <script>
+        (function() {
+          try {
+            const doc = window.parent.document;
+            // Avoid duplicating the FAB across reruns
+            if (doc.getElementById('fab-create-global')) return;
+            const wrap = doc.createElement('div');
+            wrap.id = 'fab-create-global';
+            wrap.className = 'fab';
+            const a = doc.createElement('button');
+            a.type = 'button';
+            a.className = 'fab-btn';
+            a.title = 'Create new deck';
+            a.innerText = '＋';
+            a.addEventListener('click', function(e) {
+              e.preventDefault();
+              try {
+                const tabs = doc.querySelectorAll('button[role="tab"]');
+                for (const b of tabs) {
+                  const txt = (b.innerText || '').trim();
+                  if (txt.startsWith('Create New Deck')) { b.click(); break; }
+                }
+              } catch (err) {}
+            });
+            wrap.appendChild(a);
+            doc.body.appendChild(wrap);
+          } catch (e) {}
+        })();
+        </script>
         """,
-        unsafe_allow_html=True,
+        height=0,
     )
 
-    _flag = qp_obj.get("create_deck", None)
-    _flag_val = _flag[0] if isinstance(_flag, list) and _flag else _flag
-    if _flag_val == "1":
-        st.markdown("#### Create new deck")
-        new_name = st.text_input("Deck name", key="create_deck_name")
-        c1, c2 = st.columns([1, 1])
-        with c1:
-            if st.button("Create", key="create_deck_btn"):
-                try:
-                    d = db_create_deck(new_name)
-                    st.session_state["selected_deck_id"] = d["id"]
-                    st.session_state["selected_deck_name"] = d["name"]
-                    st.success("Deck created")
-                    st.query_params.clear()
-                    st.rerun()
-                except Exception as e:
-                    st.error(str(e))
-        with c2:
-            if st.button("Cancel", key="create_deck_cancel"):
-                st.query_params.clear()
-                st.rerun()
+    # Old inline create flow removed in favor of switching to the "Create New Deck" tab.

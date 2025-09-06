@@ -267,3 +267,38 @@ def db_delete_card(card_id: int):
         cur = conn.cursor()
         cur.execute("DELETE FROM cards WHERE id = ?", (card_id,))
         conn.commit()
+
+
+def db_move_deck_contents(source_deck_id: int, target_deck_id: int) -> Dict:
+    """
+    Move all cards from source deck to target deck with deduplication.
+    - Cards that are duplicates in target (same normalized question+answer) will not be added.
+    - All cards are removed from the source deck regardless, effectively emptying it.
+    Returns a stats dict: { 'moved': total_in_source, 'added': added_to_target, 'duplicates': skipped, 'after_target': total_in_target_after }
+    """
+    if source_deck_id == target_deck_id:
+        raise Exception("Source and target deck must be different.")
+
+    # Load source cards
+    with _connect() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT question, answer FROM cards WHERE deck_id = ?", (source_deck_id,))
+        rows = cur.fetchall()
+        source_cards = [{"question": r[0], "answer": r[1]} for r in rows]
+
+    total = len(source_cards)
+
+    # Append into target with deduplication using existing merge logic
+    stats = db_add_cards(target_deck_id, source_cards)
+    added = int(stats.get("added", 0))
+    skipped = total - added
+
+    # Remove everything from source and update timestamps
+    now = datetime.datetime.now().isoformat()
+    with _connect() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM cards WHERE deck_id = ?", (source_deck_id,))
+        cur.execute("UPDATE decks SET updated_at = ? WHERE id IN (?, ?)", (now, source_deck_id, target_deck_id))
+        conn.commit()
+
+    return {"moved": total, "added": added, "duplicates": skipped, "after_target": int(stats.get("after", 0))}
