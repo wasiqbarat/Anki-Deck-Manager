@@ -1,0 +1,28 @@
+# Streamlit global app configuration
+# Docs: https://docs.streamlit.io/library/advanced-features/configuration
+
+[theme]
+# Choose between "light" and "dark"
+base = "light"
+# Modern indigo accent
+primaryColor = "#4F46E5"
+# Subtle light background
+backgroundColor = "#F8FAFC"
+# Cards/containers background
+secondaryBackgroundColor = "#FFFFFF"
+# High-contrast text color
+textColor = "#0F172A"
+# Available: "sans serif", "serif", "monospace"
+font = "sans serif"
+
+[browser]
+# Disable usage stats
+gatherUsageStats = false
+
+# Tip: To use a dark theme, change base to "dark" and adjust colors, e.g.
+# [theme]
+# base = "dark"
+# primaryColor = "#8B5CF6"
+# backgroundColor = "#0B1220"
+# secondaryBackgroundColor = "#111827"
+# textColor = "#F9FAFB"
