@@ -106,9 +106,26 @@
 
 ---
 
-## JSON Format
+## Run with Docker
 
-Your JSON should be a list of objects, each with `question` and `answer` keys:
+
+### Use the published image
+
+Published image: `wasiqbarat/anki-deck-manager:latest`
+
+- PowerShell helper script (creates folders, pulls latest image, and starts the container):
+
+```powershell
+./start.ps1 -Image wasiqbarat/anki-deck-manager:latest -Port 8501 -ContainerName anki-deck-manager
+# Stop it later
+./stop.ps1 -ContainerName anki-deck-manager
+```
+
+---
+
+## JSON Format
+    
+    Your JSON should be a list of objects, each with `question` and `answer` keys:
 
 ```json
 [

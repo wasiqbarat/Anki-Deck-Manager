@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tooling caches
+.mypy_cache/
+.pytest_cache/
+.tox/
+.coverage
+.coverage.*
+.pyre/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Node (if any)
+node_modules/
+
+# Streamlit cache
+.streamlit/cache/
+
+# App runtime data (mounted as volumes)
+Decks/
+JSONs/
+DeckLibrary/
+data/
+*.sqlite3

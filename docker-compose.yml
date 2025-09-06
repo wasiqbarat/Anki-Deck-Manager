@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    container_name: anki-deck-manager
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/code/data
+      - ./Decks:/code/Decks
+      - ./JSONs:/code/JSONs
+      - ./DeckLibrary:/code/DeckLibrary
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped

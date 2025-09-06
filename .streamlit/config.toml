@@ -19,6 +19,13 @@ font = "sans serif"
 # Disable usage stats
 gatherUsageStats = false
 
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = true
+address = "0.0.0.0"
+port = 8501
+
 # Tip: To use a dark theme, change base to "dark" and adjust colors, e.g.
 # [theme]
 # base = "dark"
