@@ -40,7 +40,7 @@ with st.container():
         <div class="app-header">
             <h1 style="margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
                 <span style="font-size: 1.8rem;">📑</span>
-                <span>Anki Deck Generator</span>
+                <span>Anki FlashCards</span>
             </h1>
             <div class="subtle">Paste or upload your flashcards as JSON, preview them, and export as an Anki .apkg.</div>
         </div>

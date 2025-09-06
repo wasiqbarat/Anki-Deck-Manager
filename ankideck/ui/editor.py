@@ -1,6 +1,7 @@
 import os
 import json
 import streamlit as st
+import streamlit.components.v1 as components
 
 from ankideck import sanitize_filename, db_get_deck_by_name, db_create_deck, db_add_cards
 from .helpers import parse_cards_from_text
@@ -30,7 +31,64 @@ def render_editor_tab(input_mode: str, deckname: str):
     with col_left:
         validate_clicked = st.button("Validate & Preview", width="content")
     with col_right:
+        # Marker element to target the next button via CSS and style it like the sidebar
+        st.markdown('<div class="adg-generate-marker"></div>', unsafe_allow_html=True)
         generate_clicked = st.button("Generate Anki Deck", type="primary", width="content")
+        # Add a class to the Generate button via JS to ensure stable styling
+        components.html(
+            """
+            <script>
+            (function() {
+              function getDoc() {
+                try { if (window.parent && window.parent.document) return window.parent.document; } catch (e) {}
+                return document;
+              }
+              function applyStyles(btn) {
+                if (!btn || btn.__adgStyled) return;
+                btn.__adgStyled = true;
+                const baseBg = 'linear-gradient(180deg, #0B1220 0%, #0A0F1A 100%)';
+                const hoverBg = 'linear-gradient(180deg, #0C1524 0%, #0A0F1A 100%)';
+                btn.style.background = baseBg;
+                btn.style.color = '#E5E7EB';
+                btn.style.border = '1px solid #111827';
+                btn.style.borderRadius = '8px';
+                btn.style.boxShadow = '0 6px 16px rgba(2, 6, 23, 0.25)';
+                btn.style.outline = 'none';
+                btn.addEventListener('mouseenter', () => { btn.style.background = hoverBg; }, { passive: true });
+                btn.addEventListener('mouseleave', () => { btn.style.background = baseBg; }, { passive: true });
+                btn.addEventListener('focus', () => { btn.style.boxShadow = '0 0 0 3px rgba(148, 163, 184, 0.25)'; });
+                btn.addEventListener('blur', () => { btn.style.boxShadow = '0 6px 16px rgba(2, 6, 23, 0.25)'; });
+              }
+
+              function tagGenerateBtn() {
+                try {
+                  const doc = getDoc();
+                  // Prefer matching by button text to be resilient to layout
+                  const btns = Array.from(doc.querySelectorAll('button'));
+                  for (const b of btns) {
+                    const txt = (b.innerText || '').trim();
+                    if (txt && txt.toLowerCase().includes('generate anki deck')) {
+                      b.classList.add('adg-generate-btn');
+                      applyStyles(b);
+                    }
+                  }
+                } catch (e) {}
+              }
+              tagGenerateBtn();
+              setTimeout(tagGenerateBtn, 50);
+              setTimeout(tagGenerateBtn, 200);
+              setTimeout(tagGenerateBtn, 500);
+              // Observe DOM changes to re-apply class after rerenders
+              try {
+                const doc = getDoc();
+                const mo = new MutationObserver(() => tagGenerateBtn());
+                mo.observe(doc.body, { childList: true, subtree: true });
+              } catch (e) {}
+            })();
+            </script>
+            """,
+            height=0,
+        )
 
     if validate_clicked:
         cards, err = parse_cards_from_text(st.session_state.get("json_text", ""))

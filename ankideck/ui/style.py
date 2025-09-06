@@ -31,6 +31,60 @@ def inject_base_styles():
             .stButton > button, .stDownloadButton > button { border-radius: 8px; border: 1px solid #e5e7eb; padding: 0.5rem 0.9rem; font-size: 1rem; }
             [data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea, [data-testid="stSelectbox"] > div > div { font-size: 1rem; }
 
+            /* Generate button in Create New Deck: match sidebar colors */
+            .adg-generate-marker + div.stButton > button,
+            .adg-generate-marker ~ div.stButton > button {
+                background: linear-gradient(180deg, #0B1220 0%, #0A0F1A 100%) !important; /* sidebar gradient */
+                color: #E5E7EB !important;
+                border: 1px solid #111827 !important;
+                box-shadow: 0 6px 16px rgba(2, 6, 23, 0.25) !important;
+            }
+            .adg-generate-marker + div.stButton > button:hover,
+            .adg-generate-marker ~ div.stButton > button:hover {
+                background: linear-gradient(180deg, #0C1524 0%, #0A0F1A 100%) !important; /* slightly brighter hover */
+            }
+            .adg-generate-marker + div.stButton > button:focus,
+            .adg-generate-marker ~ div.stButton > button:focus {
+                outline: none !important;
+                box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.25) !important;
+            }
+
+            /* Also target by JS-injected class for maximum reliability */
+            button.adg-generate-btn {
+                background: linear-gradient(180deg, #0B1220 0%, #0A0F1A 100%) !important; /* sidebar gradient */
+                color: #E5E7EB !important;
+                border: 1px solid #111827 !important;
+                border-radius: 8px !important;
+                box-shadow: 0 6px 16px rgba(2, 6, 23, 0.25) !important;
+            }
+            button.adg-generate-btn:hover { background: linear-gradient(180deg, #0C1524 0%, #0A0F1A 100%) !important; }
+            button.adg-generate-btn:focus {
+                outline: none !important;
+                box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.25) !important;
+            }
+
+            /* Fallback: style Streamlit primary buttons globally to match sidebar */
+            .stButton > button[kind="primary"],
+            .stButton > button[data-testid="baseButton-primary"],
+            .stButton > button.ef3psqc12 { /* some Streamlit builds add a stable class; safe fallback */
+                background: linear-gradient(180deg, #0B1220 0%, #0A0F1A 100%) !important;
+                color: #E5E7EB !important;
+                border: 1px solid #111827 !important;
+                border-radius: 8px !important;
+                box-shadow: 0 6px 16px rgba(2, 6, 23, 0.25) !important;
+            }
+            .stButton > button[kind="primary"]:hover,
+            .stButton > button[data-testid="baseButton-primary"]:hover,
+            .stButton > button.ef3psqc12:hover {
+                background: linear-gradient(180deg, #0C1524 0%, #0A0F1A 100%) !important;
+            }
+            .stButton > button[kind="primary"]:focus,
+            .stButton > button[data-testid="baseButton-primary"]:focus,
+            .stButton > button.ef3psqc12:focus {
+                outline: none !important;
+                box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.25) !important;
+            }
+
             /* Tabs: modern, animated segmented control style */
             /* Container (tab-list) styling */
             div[data-baseweb="tab-list"] {
@@ -177,9 +231,76 @@ def inject_base_styles():
                 border: 1px solid rgba(148,163,184,0.25) !important;
                 background: rgba(17,24,39,0.65) !important;
                 border-radius: 10px !important;
+                overflow: hidden !important; /* prevent white corners on summary */
             }
-            [data-testid="stSidebar"] .st-expander summary { color: #E5E7EB !important; }
+            /* Also cover newer Streamlit structure using data-testid */
+            [data-testid="stSidebar"] [data-testid="stExpander"] {
+                border: 1px solid rgba(148,163,184,0.25) !important;
+                background: rgba(17,24,39,0.65) !important;
+                border-radius: 10px !important;
+                overflow: hidden !important;
+            }
+            [data-testid="stSidebar"] .st-expander > summary {
+                color: #E5E7EB !important;
+                background: #0F172A !important; /* dark header */
+                padding: 0.6rem 0.9rem !important;
+                border-bottom: 1px solid rgba(148,163,184,0.18) !important;
+                list-style: none !important;
+                border-top-left-radius: 10px !important;
+                border-top-right-radius: 10px !important;
+            }
+            [data-testid="stSidebar"] [data-testid="stExpander"] summary {
+                color: #E5E7EB !important;
+                background: #0F172A !important; /* dark header */
+                padding: 0.6rem 0.9rem !important;
+                border-bottom: 1px solid rgba(148,163,184,0.18) !important;
+                list-style: none !important;
+                border-top-left-radius: 10px !important;
+                border-top-right-radius: 10px !important;
+            }
+            /* Cover Baseweb accordion structures that use [role="button"] inside the expander header */
+            [data-testid="stSidebar"] [data-testid="stExpander"] [role="button"] {
+                background: #0F172A !important;
+                color: #E5E7EB !important;
+                border-bottom: 1px solid rgba(148,163,184,0.18) !important;
+                border-top-left-radius: 10px !important;
+                border-top-right-radius: 10px !important;
+            }
+            [data-testid="stSidebar"] [data-testid="stExpander"] [role="button"]:hover { background: #111827 !important; }
+            [data-testid="stSidebar"] [data-testid="stExpander"] [role="button"] * { background: inherit !important; color: inherit !important; }
+            /* Keep header dark when expanded and on hover/focus */
+            [data-testid="stSidebar"] .st-expander[open] > summary { background: #0F172A !important; }
+            [data-testid="stSidebar"] [data-testid="stExpander"] details[open] > summary { background: #0F172A !important; }
+            [data-testid="stSidebar"] .st-expander > summary:hover,
+            [data-testid="stSidebar"] [data-testid="stExpander"] summary:hover { background: #111827 !important; }
+            [data-testid="stSidebar"] .st-expander > summary:focus,
+            [data-testid="stSidebar"] [data-testid="stExpander"] summary:focus { outline: none !important; }
+            /* Ensure any inner wrappers don't introduce white backgrounds */
+            [data-testid="stSidebar"] .st-expander > summary *,
+            [data-testid="stSidebar"] [data-testid="stExpander"] summary * { background: inherit !important; }
+            [data-testid="stSidebar"] .st-expander[open],
+            [data-testid="stSidebar"] [data-testid="stExpander"] [open] { background: rgba(17,24,39,0.75) !important; }
+            /* Ensure chevron/icon follows text color */
+            [data-testid="stSidebar"] .st-expander > summary svg,
+            [data-testid="stSidebar"] [data-testid="stExpander"] summary svg { color: #CBD5E1 !important; fill: currentColor !important; }
             [data-testid="stSidebar"] code { background: #0F172A; color: #E2E8F0; }
+            /* Ensure code blocks in the sidebar match dark theme */
+            [data-testid="stSidebar"] pre,
+            [data-testid="stSidebar"] .stCodeBlock pre {
+                background: #0F172A !important;
+                color: #E2E8F0 !important;
+                border: 1px solid #1F2937 !important;
+                border-radius: 8px !important;
+            }
+            [data-testid="stSidebar"] pre code,
+            [data-testid="stSidebar"] .stCodeBlock code {
+                color: #E2E8F0 !important;
+            }
+            /* Neutralize token colors so they don't clash with dark bg */
+            [data-testid="stSidebar"] pre code span,
+            [data-testid="stSidebar"] .stCodeBlock code span {
+                color: inherit !important;
+            }
 
             /* Footer text at the bottom of the sidebar */
             [data-testid="stSidebar"]::after {

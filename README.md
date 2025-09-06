@@ -1,4 +1,4 @@
-# Anki Deck Manager
+# Anki FlashCards
  
  A Streamlit web app to generate Anki decks (`.apkg` files) from pasted JSON flashcard data.
  You can now maintain decks over time with a built‑in SQLite database and a dedicated `My Decks` workspace.
